@@ -9,6 +9,7 @@ namespace LibAPNG
         private readonly Frame defaultImage = new Frame();
         private readonly List<Frame> frames = new List<Frame>();
         private readonly MemoryStream ms;
+        private readonly Dictionary<string, ITextChunk> textdata = new Dictionary<string, ITextChunk>();
 
         public APNG(string fileName)
             : this(File.ReadAllBytes(fileName))
@@ -199,5 +200,105 @@ namespace LibAPNG
         /// Gets the text chunks
         /// </summary>
         public ITextChunk[] TextChunks { get; private set; }
+
+        /// <summary>
+        /// Gets the title of the PNG file.
+        /// </summary>
+        public string Title
+        {
+            get
+            {
+                string[] values = GetTextByKeyword("Title");
+                return values.Length > 0 ? values[0] : String.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the description of the PNG file.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                string[] values = GetTextByKeyword("Description");
+                return values.Length > 0 ? values[0] : String.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the authors of the PNG file.
+        /// </summary>
+        public string[] Authors
+        {
+            get { return GetTextByKeyword("Author"); }
+        }
+
+        /// <summary>
+        /// Gets the copyright attributions of the PNG file.
+        /// </summary>
+        public string[] Copyright
+        {
+            get { return GetTextByKeyword("Copyright"); }
+        }
+
+        /// <summary>
+        /// Gets the legal disclaimer attributions of the PNG file.
+        /// </summary>
+        public string[] Disclaimer
+        {
+            get { return GetTextByKeyword("Disclaimer"); }
+        }
+
+        /// <summary>
+        /// Gets a set of comments associated w/ the frame.
+        /// </summary>
+        public string[] Comments
+        {
+            get { return GetTextByKeyword("Comment"); }
+        }
+
+        /// <summary>
+        /// Get a set of chunks in the frame with a specified keyword.
+        /// </summary>
+        /// <param name="keyword">The keyword of the chunks to retrieve.</param>
+        /// <returns>An array of chunks matching the keyword</returns>
+        public ITextChunk[] GetTextChunksByKeyword(string keyword)
+        {
+            List<ITextChunk> result = new List<ITextChunk>();
+
+            foreach (ITextChunk chunk in TextChunks)
+            {
+                if (chunk.Keyword != keyword)
+                {
+                    continue;
+                }
+
+                result.Add(chunk);
+            }
+
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// Get a set of chunks in the frame with a specified keyword.
+        /// </summary>
+        /// <param name="keyword">The keyword of the chunks to retrieve.</param>
+        /// <returns>An array of chunks matching the keyword</returns>
+        public string[] GetTextByKeyword(string keyword)
+        {
+            List<string> result = new List<string>();
+
+            foreach (ITextChunk chunk in TextChunks)
+            {
+                if (chunk.Keyword != keyword)
+                {
+                    continue;
+                }
+
+                result.Add(chunk.Text);
+            }
+
+            return result.ToArray();
+        }
     }
 }

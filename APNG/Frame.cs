@@ -12,6 +12,7 @@ namespace LibAPNG
 
         private List<IDATChunk> idatChunks = new List<IDATChunk>();
         private ITextChunk[] textChunks = new ITextChunk[0];
+        private ITextChunk[] commentChunks = new ITextChunk[0];
 
         /// <summary>
         /// Gets or Sets the acTL chunk
@@ -44,6 +45,24 @@ namespace LibAPNG
         {
             get { return textChunks; }
             internal set { textChunks = value; }
+        }
+
+        /// <summary>
+        /// Gets a set of comments associated w/ the frame.
+        /// </summary>
+        public string[] Comments
+        {
+            get
+            {
+                List<string> result = new List<string>();
+
+                foreach (ITextChunk chunk in GetTextChunksByKeyword("Comment"))
+                {
+                    result.Add(chunk.Text);
+                }
+
+                return result.ToArray();
+            }
         }
 
         /// <summary>
@@ -84,6 +103,28 @@ namespace LibAPNG
                 ms.Position = 0;
                 return ms;
             }
+        }
+
+        /// <summary>
+        /// Get a set of chunks in the frame with a specified keyword.
+        /// </summary>
+        /// <param name="keyword">The keyword of the chunks to retrieve.</param>
+        /// <returns>An array of chunks matching the keyword</returns>
+        public ITextChunk[] GetTextChunksByKeyword(string keyword)
+        {
+            List<ITextChunk> result = new List<ITextChunk>();
+
+            foreach (ITextChunk chunk in textChunks)
+            {
+                if (chunk.Keyword != keyword)
+                {
+                    continue;
+                }
+
+                result.Add(chunk);
+            }
+
+            return result.ToArray();
         }
     }
 }
