@@ -60,7 +60,11 @@ namespace LibAPNG
                     case "IDAT":
                         // To be an APNG, acTL must located before any IDAT and fdAT.
                         if (acTLChunk == null)
+                        {
+                            TextChunks = text_chunks.ToArray();
+                            text_chunks.Clear();
                             IsSimplePNG = true;
+                        }
 
                         // Only default image has IDAT.
                         defaultImage.IHDRChunk = IHDRChunk;
