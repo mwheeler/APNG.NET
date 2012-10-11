@@ -11,6 +11,7 @@ namespace LibAPNG
         public static byte[] Signature = new byte[] {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
         private List<IDATChunk> idatChunks = new List<IDATChunk>();
+        private ITextChunk[] textChunks = new ITextChunk[0];
 
         /// <summary>
         /// Gets or Sets the acTL chunk
@@ -34,6 +35,15 @@ namespace LibAPNG
         {
             get { return idatChunks; }
             set { idatChunks = value; }
+        }
+
+        /// <summary>
+        /// Gets the text chunks.
+        /// </summary>
+        public ITextChunk[] TextChunks
+        {
+            get { return textChunks; }
+            internal set { textChunks = value; }
         }
 
         /// <summary>
@@ -65,6 +75,10 @@ namespace LibAPNG
 
                 foreach (IDATChunk idatChunk in idatChunks)
                     ms.WriteBytes(idatChunk.RawData);
+
+                foreach (ITextChunk chunk in TextChunks)
+                    ms.WriteBytes((chunk as Chunk).RawData);
+
                 ms.WriteBytes(IENDChunk.RawData);
 
                 ms.Position = 0;

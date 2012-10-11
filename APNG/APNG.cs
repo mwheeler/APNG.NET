@@ -31,6 +31,7 @@ namespace LibAPNG
             // Now let's loop in chunks
             Chunk chunk;
             Frame frame = null;
+            List<ITextChunk> text_chunks = new List<ITextChunk>();
             bool isIDATAlreadyParsed = false;
             do
             {
@@ -48,6 +49,9 @@ namespace LibAPNG
                     case "acTL":
                         if (IsSimplePNG)
                             throw new Exception("acTL chunk must located before any IDAT and fdAT");
+
+                        TextChunks = text_chunks.ToArray();
+                        text_chunks.Clear();
 
                         acTLChunk = new acTLChunk(chunk);
                         break;
@@ -77,7 +81,12 @@ namespace LibAPNG
                             // register current frame object and build a new frame object
                             // for next use
                             if (frame != null)
+                            {
+                                frame.TextChunks = text_chunks.ToArray();
                                 frames.Add(frame);
+                                text_chunks.Clear();
+                            }
+
                             frame = new Frame
                                         {
                                             IHDRChunk = IHDRChunk,
@@ -105,7 +114,11 @@ namespace LibAPNG
                     case "IEND":
                         // register last frame object
                         if (frame != null)
+                        {
+                            frame.TextChunks = text_chunks.ToArray();
                             frames.Add(frame);
+                            text_chunks.Clear();
+                        }
 
                         if (DefaultImage.IDATChunks.Count != 0)
                             DefaultImage.IENDChunk = new IENDChunk(chunk);
@@ -113,6 +126,18 @@ namespace LibAPNG
                         {
                             f.IENDChunk = new IENDChunk(chunk);
                         }
+                        break;
+
+                    case "iTXt":
+                        text_chunks.Add(new iTXtChunk(chunk));
+                        break;
+
+                    case "tEXt":
+                        text_chunks.Add(new tEXtChunk(chunk));
+                        break;
+
+                    case "zTXt":
+                        text_chunks.Add(new zTXtChunk(chunk));
                         break;
 
                     default:
@@ -169,5 +194,10 @@ namespace LibAPNG
         /// Gets the acTL Chunk
         /// </summary>
         public acTLChunk acTLChunk { get; private set; }
+
+        /// <summary>
+        /// Gets the text chunks
+        /// </summary>
+        public ITextChunk[] TextChunks { get; private set; }
     }
 }
